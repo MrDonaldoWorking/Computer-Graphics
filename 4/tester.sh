@@ -4,8 +4,8 @@ g++ -std=c++11 -fsanitize=address -fno-stack-limit -o convert main.cpp colour_sp
 
 palette=("RGB" "HSL" "HSV" "YCbCr.601" "YCbCr.709" "YCoCg" "CMY")
 
-rm -r sample
 mkdir -p sample
+rm sample/*
 for p in ${palette[@]}; do
     echo "running ./convert -f RGB -t $p -i 1 ../test/tree.ppm -o 1 sample/RGB_to_$p.ppm"
     ./convert -f RGB -t $p -i 1 ../test/tree.ppm -o 1 "sample/RGB_to_$p.ppm"
@@ -15,9 +15,9 @@ for p in ${palette[@]}; do
 done
 
 for p in ${palette[@]}; do
-    echo "running ./convert -f $p -t RGB -i 1 sample/RGB_to_$p.pgm -o 1 RGB_to_"$p"_to_RGB_1.ppm"
+    echo "running ./convert -f $p -t RGB -i 1 sample/RGB_to_$p.pgm -o 1 sample/RGB_to_"$p"_to_RGB_1.ppm"
     ./convert -f $p -t RGB -i 1 "sample/RGB_to_$p.ppm" -o 1 "sample/RGB_to_"$p"_to_RGB_1.ppm"
-    echo "running ./convert -f $p -t RGB -i 3 sample/RGB_to_$p.pgm -o 1 RGB_to_"$p"_to_RGB_2.ppm"
+    echo "running ./convert -f $p -t RGB -i 3 sample/RGB_to_$p.pgm -o 1 sample/RGB_to_"$p"_to_RGB_2.ppm"
     ./convert -f $p -t RGB -i 3 "sample/RGB_to_$p.pgm" -o 1 "sample/RGB_to_"$p"_to_RGB_2.ppm"
     echo "done $p"
 

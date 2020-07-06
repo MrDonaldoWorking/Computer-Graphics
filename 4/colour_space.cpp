@@ -64,7 +64,7 @@ void picture::read_data_P5(std::string const& file) {
     std::string name = file.substr(0, dot_pos);
     std::string extension = file.substr(dot_pos);
     for (int num = 0; num < 3; ++num) {
-        std::string file_name = name + "_" + std::to_string(num) + extension;
+        std::string file_name = name + "_" + std::to_string(num + 1) + extension;
         std::ifstream in(file_name);
         read_meta_data(in, file_name, 5);
 
@@ -154,7 +154,7 @@ inline bool less(double a, double b) {
 }
 
 inline int correction(double val) {
-    return static_cast<int>(round(MAX_BRIGHTNESS * fmax(0, fmin(1, val))));
+    return static_cast<int>(floor(MAX_BRIGHTNESS * fmax(0, fmin(1, val))));
 }
 
 inline void update(int *pixel, double x, double y, double z) {
@@ -163,7 +163,7 @@ inline void update(int *pixel, double x, double y, double z) {
     pixel[2] = correction(z);
 }
 
-void HSL_V_to_RGB(int *pixel, COLOUR_PALETTE palette) {
+void HSL_to_RGB(int *pixel) {
     double H = (pixel[0] / static_cast<double>(MAX_BRIGHTNESS)) * TWO_PIES;
     double S = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
     double L = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
@@ -172,16 +172,112 @@ void HSL_V_to_RGB(int *pixel, COLOUR_PALETTE palette) {
     double C = (1 - fabs(2 * L - 1)) * S;
     double X = C * (1 - fabs(fmod(H_, 2) - 1));
     double m = L - C / 2;
-    if (palette == HSL) {
-        C = (1 - fabs(2 * L - 1)) * S;
-        m = L - C / 2;
-    } else {
-        C = S * L;
-        m = L - C;
-    }
-    X = C * (1 - fabs(fmod(H_, 2) - 1));
 
-    double R, G, B;
+    double R = 0, G = 0, B = 0;
+    switch (static_cast<int>(floor(H_))) {
+        case 0:
+            R = C;
+            G = X;
+            B = 0;
+            break;
+
+        case 1:
+            R = X;
+            G = C;
+            B = 0;
+            break;
+
+        case 2:
+            R = 0;
+            G = C;
+            B = X;
+            break;
+
+        case 3:
+            R = 0;
+            G = X;
+            B = C;
+            break;
+
+        case 4:
+            R = X;
+            G = 0;
+            B = C;
+            break;
+
+        case 5:
+            R = C;
+            G = 0;
+            B = X;
+            break;
+    }
+
+    update(pixel, R + m, G + m, B + m);
+}
+
+void HSV_to_RGB(int *pixel) {
+    double H = (pixel[0] / static_cast<double>(MAX_BRIGHTNESS)) * TWO_PIES;
+    double S = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
+    double V = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
+
+    double C = V * S;
+    double H_ = H / ONE_THIRD_PI;
+    double X = C * (1 - fabs(fmod(H_, 2) - 1));
+    double m = V - C;
+
+    double R = 0, G = 0, B = 0;
+    // doesn't work if H_ > 0 :(
+    if (H_ >= 0 && H_ <= 1) {
+        R = C;
+        G = X;
+        B = 0;
+    } else if (H_ > 1 && H_ <= 2) {
+        R = X;
+        G = C;
+        B = 0;
+    } else if (H_ > 2 && H_ <= 3) {
+        R = 0;
+        G = C;
+        B = X;
+    } else if (H_ > 3 && H_ <= 4) {
+        R = 0;
+        G = X;
+        B = C;
+    } else if (H_ > 4 && H_ <= 5) {
+        R = X;
+        G = 0;
+        B = C;
+    } else if (H_ > 5 && H_ <= 6) {
+        R = C;
+        G = 0;
+        B = X;
+    }
+
+    update(pixel, R + m, G + m, B + m);
+}
+
+// Not working :(
+void HSL_V_to_RGB(int *pixel, COLOUR_PALETTE palette) {
+    double H = (pixel[0] / static_cast<double>(MAX_BRIGHTNESS)) * TWO_PIES;
+    double S = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
+    double L = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
+
+    double H_ = H / ONE_THIRD_PI;
+    double C, m;
+    switch (palette) {
+        case HSL:
+            C = (1 - fabs(2 * L - 1)) * S;
+            m = L - C / 2;    
+            break;
+        
+        case HSV:
+            C = S * L;
+            m = L - C;
+            break;
+    }
+    double X = C * (1 - fabs(fmod(H_, 2) - 1));
+
+    double R = 0, G = 0, B = 0;
     if (less(H_, 1)) {
         R = (C + m);
         G = (X + m);
@@ -243,8 +339,11 @@ void picture::to_RGB() {
                     return;
 
                 case HSL:
+                    HSL_to_RGB(data[h][w]);
+                    break;
+
                 case HSV:
-                    HSL_V_to_RGB(data[h][w], palette);
+                    HSV_to_RGB(data[h][w]);
                     break;
 
                 case YCbCr601:
@@ -273,6 +372,76 @@ void picture::to_RGB() {
 
 // RGB to ?
 
+void RGB_to_HSL(int *pixel) {
+    int max_i = std::max(pixel[0], std::max(pixel[1], pixel[2]));
+    int min_i = std::min(pixel[0], std::min(pixel[1], pixel[2]));
+
+    double R = pixel[0] / static_cast<double>(MAX_BRIGHTNESS);
+    double G = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
+    double B = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
+
+    double max_d = fmax(R, fmax(G, B));
+    double min_d = fmin(R, fmin(G, B));
+    double V = max_d;
+    double C = max_d - min_d;
+    double L = V - C / 2;
+
+    double H = 0;
+    if (max_i != min_i) {
+        if (max_d == R) {
+            H = ONE_THIRD_PI * ((G - B) / C);
+        } else if (max_d == G) {
+            H = ONE_THIRD_PI * (2 + (B - R) / C);
+        } else if (max_d == B) {
+            H = ONE_THIRD_PI * (4 + (R - G) / C);
+        }
+    }
+    if (H < 0) {
+        H += TWO_PIES;
+    }
+
+    double S = 0;
+    // V != 0 && V != 1
+    if (max_i != 0 && max_i != 2 * MAX_BRIGHTNESS - min_i) {
+        S = (V - L) / std::min(L, 1 - L);
+    }
+
+    update(pixel, H / TWO_PIES, S, L);
+}
+
+void RGB_to_HSV(int *pixel) {
+    double R = pixel[0] / static_cast<double>(MAX_BRIGHTNESS);
+    double G = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
+    double B = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
+
+    double max_d = fmax(R, fmax(G, B));
+    double min_d = fmin(R, fmin(G, B));
+    double C = max_d - min_d;
+    double V = max_d;
+
+    double H = 0;
+    if (C != 0) {
+        if (max_d == R) {
+            H = ONE_THIRD_PI * (G - B) / C;
+        } else if (max_d == G) {
+            H = ONE_THIRD_PI * (2 + (B - R) / C);
+        } else if (max_d == B) {
+            H = ONE_THIRD_PI * (4 + (R - G) / C);
+        }
+    }
+    if (H < 0) {
+        H += TWO_PIES;
+    }
+
+    double S = 0;
+    if (V != 0) {
+        S = C / V;
+    }
+
+    update(pixel, H / TWO_PIES, S, V);
+}
+
+// Not working :(
 void RGB_to_HSL_V(int *pixel, COLOUR_PALETTE palette) {
     int max_i = std::max(pixel[0], std::max(pixel[1], pixel[2]));
     int min_i = std::min(pixel[0], std::min(pixel[1], pixel[2]));
@@ -352,8 +521,11 @@ void picture::RGB_to(COLOUR_PALETTE palette) {
                     return;
 
                 case HSL:
+                    RGB_to_HSL(data[h][w]);
+                    break;
+
                 case HSV:
-                    RGB_to_HSL_V(data[h][w], palette);
+                    RGB_to_HSV(data[h][w]);
                     break;
 
                 case YCbCr601:
@@ -429,7 +601,7 @@ void picture::write_to_three_P5(std::string const& file) {
     std::string name = file.substr(0, dot_pos);
     std::string extension = file.substr(dot_pos);
     for (int num = 0; num < 3; ++num) {
-        std::string file_name = name + "_" + std::to_string(num) + extension;
+        std::string file_name = name + "_" + std::to_string(num + 1) + extension;
         // std::cout << "Writing info into " << file_name << '\n';
         std::ofstream out(file_name);
         if (!out.is_open()) {

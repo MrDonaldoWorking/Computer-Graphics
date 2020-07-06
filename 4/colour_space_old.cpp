@@ -256,6 +256,57 @@ void HSV_to_RGB(int *pixel) {
     update(pixel, R + m, G + m, B + m);
 }
 
+// Not working :(
+void HSL_V_to_RGB(int *pixel, COLOUR_PALETTE palette) {
+    double H = (pixel[0] / static_cast<double>(MAX_BRIGHTNESS)) * TWO_PIES;
+    double S = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
+    double L = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
+
+    double H_ = H / ONE_THIRD_PI;
+    double C, m;
+    switch (palette) {
+        case HSL:
+            C = (1 - fabs(2 * L - 1)) * S;
+            m = L - C / 2;    
+            break;
+        
+        case HSV:
+            C = S * L;
+            m = L - C;
+            break;
+    }
+    double X = C * (1 - fabs(fmod(H_, 2) - 1));
+
+    double R = 0, G = 0, B = 0;
+    if (less(H_, 1)) {
+        R = (C + m);
+        G = (X + m);
+        B = (m);
+    } else if (less(H_, 2)) {
+        R = (X + m);
+        G = (C + m);
+        B = (m);
+    } else if (less(H_, 3)) {
+        R = (m);
+        G = (C + m);
+        B = (X + m);
+    } else if (less(H_, 4)) {
+        R = (m);
+        G = (X + m);
+        B = (C + m);
+    } else if (less(H_, 5)) {
+        R = (X + m);
+        G = (m);
+        B = (C + m);
+    } else if (less(H_, 6)) {
+        R = (C + m);
+        G = (m);
+        B = (X + m);
+    }
+
+    update(pixel, R, G, B);
+}
+
 void YCbCr_to_RGB(int *pixel, double K_R, double K_G, double K_B) {
     double Y = pixel[0] / static_cast<double>(MAX_BRIGHTNESS);
     double Cb = pixel[1] / static_cast<double>(MAX_BRIGHTNESS) - ONE_SECOND;
@@ -388,6 +439,50 @@ void RGB_to_HSV(int *pixel) {
     }
 
     update(pixel, H / TWO_PIES, S, V);
+}
+
+// Not working :(
+void RGB_to_HSL_V(int *pixel, COLOUR_PALETTE palette) {
+    int max_i = std::max(pixel[0], std::max(pixel[1], pixel[2]));
+    int min_i = std::min(pixel[0], std::min(pixel[1], pixel[2]));
+    double max_d = max_i / static_cast<double>(MAX_BRIGHTNESS);
+    double min_d = min_i / static_cast<double>(MAX_BRIGHTNESS);
+
+    double V = max_d;
+    double C = max_d - min_d;
+    double L = V - C / 2;
+
+    double H = 0;
+    if (max_i != min_i) {
+        if (max_i == pixel[0]) { // R
+            H = ONE_THIRD_PI * (pixel[1] - pixel[2]) / C / MAX_BRIGHTNESS;
+        } else if (max_i == pixel[1]) { // G
+            H = ONE_THIRD_PI * (2 + (pixel[2] - pixel[0]) / C / MAX_BRIGHTNESS);
+        } else { // B
+            H = ONE_THIRD_PI * (4 + (pixel[0] - pixel[1]) / C / MAX_BRIGHTNESS);
+        }
+    }
+
+    double S = 0;
+    switch (palette) {
+        case HSL:
+            // L != 0 && L != 1
+            if (max_i != 0 && max_i != 2 * MAX_BRIGHTNESS - min_i) {
+                S = (V - L) / std::min(L, 1 - L);
+            }
+            pixel[2] = correction(L);
+            break;
+
+        case HSV:
+            // V != 0
+            if (max_i != 0) {
+                S = C / V;
+            }
+            pixel[2] = correction(V);
+            break;
+    }
+    pixel[0] = correction(H / TWO_PIES);
+    pixel[1] = correction(S);
 }
 
 void RGB_to_YCbCr(int *pixel, double K_R, double K_G, double K_B) {

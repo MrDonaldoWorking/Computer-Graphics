@@ -60,7 +60,7 @@ int*** picture::get_data() {
 }
 
 void picture::read_data_P5(std::string const& file) {
-    int dot_pos = file.find('.');
+    int dot_pos = file.find_last_of('.');
     std::string name = file.substr(0, dot_pos);
     std::string extension = file.substr(dot_pos);
     for (int num = 0; num < 3; ++num) {
@@ -425,7 +425,7 @@ void picture::write_to_one_P6(std::string const& file) {
 }
 
 void picture::write_to_three_P5(std::string const& file) {
-    int dot_pos = file.find('.');
+    int dot_pos = file.find_last_of('.');
     std::string name = file.substr(0, dot_pos);
     std::string extension = file.substr(dot_pos);
     for (int num = 0; num < 3; ++num) {

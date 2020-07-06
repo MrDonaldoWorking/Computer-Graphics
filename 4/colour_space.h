@@ -13,7 +13,7 @@ double const K_R_709 = 0.0722;
 double const K_G_709 = 0.2126;
 double const K_B_709 = 0.7152;
 
-enum COLOUR_PALETTE {
+enum COLOUR_SPACE {
     ERROR,
     RGB,
     HSL,
@@ -26,7 +26,7 @@ enum COLOUR_PALETTE {
 
 struct picture {
     picture() = default;
-    picture(int cnt, std::string const& name, COLOUR_PALETTE palette);
+    picture(int cnt, std::string const& name, COLOUR_SPACE space);
     ~picture();
 
     int get_width() const;
@@ -35,7 +35,7 @@ struct picture {
     int*** get_data();
 
     void to_RGB();
-    void RGB_to(COLOUR_PALETTE);
+    void RGB_to(COLOUR_SPACE);
 
     void write(int cnt, std::string const& name);
 
@@ -44,7 +44,7 @@ struct picture {
     int height = 0;
     int max_brightness = 255;
     int ***data = nullptr;
-    COLOUR_PALETTE palette = ERROR;
+    COLOUR_SPACE space = ERROR;
 
     void update_int(std::string const& name, int& x, int curr_value);
     void read_meta_data(std::ifstream &in, std::string const& name, int encoding);

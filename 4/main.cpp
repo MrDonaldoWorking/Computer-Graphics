@@ -4,15 +4,15 @@
 #include <fstream>
 #include "colour_space.h"
 
-COLOUR_PALETTE check_and_get_colour_space(std::string const& s, std::map<std::string, COLOUR_PALETTE> &palettes) {
-    if (palettes[s] == ERROR) {
+COLOUR_SPACE check_and_get_colour_space(std::string const& s, std::map<std::string, COLOUR_SPACE> &spaces) {
+    if (spaces[s] == ERROR) {
         throw std::runtime_error("Colour space " + s + " is not supported\n");
     }
-    return palettes[s];
+    return spaces[s];
 }
 
 int main(int argc, char *argv[]) {
-    std::map<std::string, COLOUR_PALETTE> colour_palettes = {
+    std::map<std::string, COLOUR_SPACE> colour_spaces = {
         {"RGB", RGB},
         {"HSL", HSL},
         {"HSV", HSV},
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    COLOUR_PALETTE colour_space_from = ERROR, colour_space_to = ERROR;
+    COLOUR_SPACE colour_space_from = ERROR, colour_space_to = ERROR;
     std::string input_file_name, output_file_name;
     int inputs = 0, outputs = 0;
     try {
@@ -37,11 +37,11 @@ int main(int argc, char *argv[]) {
             if (argv[arg][0] == '-' && strlen(argv[arg]) == 2) {
                 switch (argv[arg][1]) {
                     case 'f':
-                        colour_space_from = check_and_get_colour_space(argv[arg + 1], colour_palettes);
+                        colour_space_from = check_and_get_colour_space(argv[arg + 1], colour_spaces);
                         break;
 
                     case 't':
-                        colour_space_to = check_and_get_colour_space(argv[arg + 1], colour_palettes);
+                        colour_space_to = check_and_get_colour_space(argv[arg + 1], colour_spaces);
                         break;
                     
                     case 'i':

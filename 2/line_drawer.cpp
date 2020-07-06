@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
-#include <fstream>
 #include <math.h>
 #include "line_drawer.h"
 

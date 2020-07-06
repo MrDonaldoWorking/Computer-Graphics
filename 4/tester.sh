@@ -22,10 +22,10 @@ for p in ${palette[@]}; do
     echo "done $p"
 
     echo "diff -qs ../test/tree.ppm sample/RGB_to_"$p"_to_RGB_1.ppm"
-    cmp -l ../test/tree.ppm "sample/RGB_to_"$p"_to_RGB_1.ppm" | gawk '{printf "%08X %02X %02X\n", $1, strtonum(0$2), strtonum(0$3)}' | head -10
+    cmp -l ../test/tree.ppm "sample/RGB_to_"$p"_to_RGB_1.ppm" | gawk '{printf "%08X %02X %02X\n", $1, strtonum(0$2), strtonum(0$3)}' | wc -l
 
     echo "diff -qs ../test/tree.ppm sample/RGB_to_"$p"_to_RGB_2.ppm"
-    cmp -l ../test/tree.ppm "sample/RGB_to_"$p"_to_RGB_2.ppm" | gawk '{printf "%08X %02X %02X\n", $1, strtonum(0$2), strtonum(0$3)}' | head -10
+    cmp -l ../test/tree.ppm "sample/RGB_to_"$p"_to_RGB_2.ppm" | gawk '{printf "%08X %02X %02X\n", $1, strtonum(0$2), strtonum(0$3)}' | wc -l
 
     echo "diff -qs sample/RGB_to_"$p"_to_RGB_1.ppm sample/RGB_to_"$p"_to_RGB_2.ppm"
     echo $(diff -qs "sample/RGB_to_"$p"_to_RGB_1.ppm" "sample/RGB_to_"$p"_to_RGB_2.ppm")

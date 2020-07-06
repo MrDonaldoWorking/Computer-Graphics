@@ -1,156 +1,70 @@
-running ./convert -f RGB -t RGB -i 1 sample/RGB_to_RGB.pgm -o 1 RGB_to_RGB_to_RGB_1.ppm
-running ./convert -f RGB -t RGB -i 3 sample/RGB_to_RGB.pgm -o 1 RGB_to_RGB_to_RGB_2.ppm
+running ./convert -f RGB -t RGB -i 1 sample/RGB_to_RGB.pgm -o 1 sample/RGB_to_RGB_to_RGB_1.ppm
+running ./convert -f RGB -t RGB -i 3 sample/RGB_to_RGB.pgm -o 1 sample/RGB_to_RGB_to_RGB_2.ppm
 done RGB
 diff -qs ../test/tree.ppm sample/RGB_to_RGB_to_RGB_1.ppm
+0
 diff -qs ../test/tree.ppm sample/RGB_to_RGB_to_RGB_2.ppm
+0
 diff -qs sample/RGB_to_RGB_to_RGB_1.ppm sample/RGB_to_RGB_to_RGB_2.ppm
 Files sample/RGB_to_RGB_to_RGB_1.ppm and sample/RGB_to_RGB_to_RGB_2.ppm are identical
 
-running ./convert -f HSL -t RGB -i 1 sample/RGB_to_HSL.pgm -o 1 RGB_to_HSL_to_RGB_1.ppm
-running ./convert -f HSL -t RGB -i 3 sample/RGB_to_HSL.pgm -o 1 RGB_to_HSL_to_RGB_2.ppm
+running ./convert -f HSL -t RGB -i 1 sample/RGB_to_HSL.pgm -o 1 sample/RGB_to_HSL_to_RGB_1.ppm
+running ./convert -f HSL -t RGB -i 3 sample/RGB_to_HSL.pgm -o 1 sample/RGB_to_HSL_to_RGB_2.ppm
 done HSL
 diff -qs ../test/tree.ppm sample/RGB_to_HSL_to_RGB_1.ppm
-00000016 2B 2C
-00000018 39 3A
-00000019 2A 2B
-0000001B 38 39
-0000002A 46 47
-0000002D 42 43
-00000030 40 41
-00000033 3D 3E
-00000042 3D 3E
-00000045 3B 3C
+944221
 diff -qs ../test/tree.ppm sample/RGB_to_HSL_to_RGB_2.ppm
-00000016 2B 2C
-00000018 39 3A
-00000019 2A 2B
-0000001B 38 39
-0000002A 46 47
-0000002D 42 43
-00000030 40 41
-00000033 3D 3E
-00000042 3D 3E
-00000045 3B 3C
+944221
 diff -qs sample/RGB_to_HSL_to_RGB_1.ppm sample/RGB_to_HSL_to_RGB_2.ppm
 Files sample/RGB_to_HSL_to_RGB_1.ppm and sample/RGB_to_HSL_to_RGB_2.ppm are identical
 
-running ./convert -f HSV -t RGB -i 1 sample/RGB_to_HSV.pgm -o 1 RGB_to_HSV_to_RGB_1.ppm
-running ./convert -f HSV -t RGB -i 3 sample/RGB_to_HSV.pgm -o 1 RGB_to_HSV_to_RGB_2.ppm
+running ./convert -f HSV -t RGB -i 1 sample/RGB_to_HSV.pgm -o 1 sample/RGB_to_HSV_to_RGB_1.ppm
+running ./convert -f HSV -t RGB -i 3 sample/RGB_to_HSV.pgm -o 1 sample/RGB_to_HSV_to_RGB_2.ppm
 done HSV
 diff -qs ../test/tree.ppm sample/RGB_to_HSV_to_RGB_1.ppm
-000000AB 4D 2C
-000000AE 58 37
-000000B1 59 37
-000000B4 52 30
-000000B7 4C 2B
-000000BA 58 37
-000000BD 50 2F
-000000C0 53 32
-000000C3 5E 3D
-000000C6 58 35
+282446
 diff -qs ../test/tree.ppm sample/RGB_to_HSV_to_RGB_2.ppm
-000000AB 4D 2C
-000000AE 58 37
-000000B1 59 37
-000000B4 52 30
-000000B7 4C 2B
-000000BA 58 37
-000000BD 50 2F
-000000C0 53 32
-000000C3 5E 3D
-000000C6 58 35
+282446
 diff -qs sample/RGB_to_HSV_to_RGB_1.ppm sample/RGB_to_HSV_to_RGB_2.ppm
 Files sample/RGB_to_HSV_to_RGB_1.ppm and sample/RGB_to_HSV_to_RGB_2.ppm are identical
 
-running ./convert -f YCbCr.601 -t RGB -i 1 sample/RGB_to_YCbCr.601.pgm -o 1 RGB_to_YCbCr.601_to_RGB_1.ppm
-running ./convert -f YCbCr.601 -t RGB -i 3 sample/RGB_to_YCbCr.601.pgm -o 1 RGB_to_YCbCr.601_to_RGB_2.ppm
+running ./convert -f YCbCr.601 -t RGB -i 1 sample/RGB_to_YCbCr.601.pgm -o 1 sample/RGB_to_YCbCr.601_to_RGB_1.ppm
+running ./convert -f YCbCr.601 -t RGB -i 3 sample/RGB_to_YCbCr.601.pgm -o 1 sample/RGB_to_YCbCr.601_to_RGB_2.ppm
 done YCbCr.601
 diff -qs ../test/tree.ppm sample/RGB_to_YCbCr.601_to_RGB_1.ppm
-00000010 23 22
-00000013 27 26
-00000016 2B 2C
-00000018 39 38
-00000019 2A 2B
-0000001B 38 37
-0000001E 36 35
-00000021 37 36
-00000022 2C 2D
-00000024 3F 40
+1108646
 diff -qs ../test/tree.ppm sample/RGB_to_YCbCr.601_to_RGB_2.ppm
-00000010 23 22
-00000013 27 26
-00000016 2B 2C
-00000018 39 38
-00000019 2A 2B
-0000001B 38 37
-0000001E 36 35
-00000021 37 36
-00000022 2C 2D
-00000024 3F 40
+1108646
 diff -qs sample/RGB_to_YCbCr.601_to_RGB_1.ppm sample/RGB_to_YCbCr.601_to_RGB_2.ppm
 Files sample/RGB_to_YCbCr.601_to_RGB_1.ppm and sample/RGB_to_YCbCr.601_to_RGB_2.ppm are identical
 
-running ./convert -f YCbCr.709 -t RGB -i 1 sample/RGB_to_YCbCr.709.pgm -o 1 RGB_to_YCbCr.709_to_RGB_1.ppm
-running ./convert -f YCbCr.709 -t RGB -i 3 sample/RGB_to_YCbCr.709.pgm -o 1 RGB_to_YCbCr.709_to_RGB_2.ppm
+running ./convert -f YCbCr.709 -t RGB -i 1 sample/RGB_to_YCbCr.709.pgm -o 1 sample/RGB_to_YCbCr.709_to_RGB_1.ppm
+running ./convert -f YCbCr.709 -t RGB -i 3 sample/RGB_to_YCbCr.709.pgm -o 1 sample/RGB_to_YCbCr.709_to_RGB_2.ppm
 done YCbCr.709
 diff -qs ../test/tree.ppm sample/RGB_to_YCbCr.709_to_RGB_1.ppm
-00000012 2F 30
-00000015 33 34
-00000016 2B 2C
-00000019 2A 2B
-00000022 2C 2B
-00000025 32 31
-0000002E 26 25
-00000031 23 22
-00000035 1C 1B
-00000038 1C 1B
+1133452
 diff -qs ../test/tree.ppm sample/RGB_to_YCbCr.709_to_RGB_2.ppm
-00000012 2F 30
-00000015 33 34
-00000016 2B 2C
-00000019 2A 2B
-00000022 2C 2B
-00000025 32 31
-0000002E 26 25
-00000031 23 22
-00000035 1C 1B
-00000038 1C 1B
+1133452
 diff -qs sample/RGB_to_YCbCr.709_to_RGB_1.ppm sample/RGB_to_YCbCr.709_to_RGB_2.ppm
 Files sample/RGB_to_YCbCr.709_to_RGB_1.ppm and sample/RGB_to_YCbCr.709_to_RGB_2.ppm are identical
 
-running ./convert -f YCoCg -t RGB -i 1 sample/RGB_to_YCoCg.pgm -o 1 RGB_to_YCoCg_to_RGB_1.ppm
-running ./convert -f YCoCg -t RGB -i 3 sample/RGB_to_YCoCg.pgm -o 1 RGB_to_YCoCg_to_RGB_2.ppm
+running ./convert -f YCoCg -t RGB -i 1 sample/RGB_to_YCoCg.pgm -o 1 sample/RGB_to_YCoCg_to_RGB_1.ppm
+running ./convert -f YCoCg -t RGB -i 3 sample/RGB_to_YCoCg.pgm -o 1 sample/RGB_to_YCoCg_to_RGB_2.ppm
 done YCoCg
 diff -qs ../test/tree.ppm sample/RGB_to_YCoCg_to_RGB_1.ppm
-00000011 15 16
-00000012 2F 2E
-00000014 19 1A
-00000015 33 32
-00000018 39 38
-0000001B 38 37
-0000001D 1A 19
-00000020 1B 1A
-00000029 27 28
-0000002A 46 45
+821540
 diff -qs ../test/tree.ppm sample/RGB_to_YCoCg_to_RGB_2.ppm
-00000011 15 16
-00000012 2F 2E
-00000014 19 1A
-00000015 33 32
-00000018 39 38
-0000001B 38 37
-0000001D 1A 19
-00000020 1B 1A
-00000029 27 28
-0000002A 46 45
+821540
 diff -qs sample/RGB_to_YCoCg_to_RGB_1.ppm sample/RGB_to_YCoCg_to_RGB_2.ppm
 Files sample/RGB_to_YCoCg_to_RGB_1.ppm and sample/RGB_to_YCoCg_to_RGB_2.ppm are identical
 
-running ./convert -f CMY -t RGB -i 1 sample/RGB_to_CMY.pgm -o 1 RGB_to_CMY_to_RGB_1.ppm
-running ./convert -f CMY -t RGB -i 3 sample/RGB_to_CMY.pgm -o 1 RGB_to_CMY_to_RGB_2.ppm
+running ./convert -f CMY -t RGB -i 1 sample/RGB_to_CMY.pgm -o 1 sample/RGB_to_CMY_to_RGB_1.ppm
+running ./convert -f CMY -t RGB -i 3 sample/RGB_to_CMY.pgm -o 1 sample/RGB_to_CMY_to_RGB_2.ppm
 done CMY
 diff -qs ../test/tree.ppm sample/RGB_to_CMY_to_RGB_1.ppm
+0
 diff -qs ../test/tree.ppm sample/RGB_to_CMY_to_RGB_2.ppm
+0
 diff -qs sample/RGB_to_CMY_to_RGB_1.ppm sample/RGB_to_CMY_to_RGB_2.ppm
 Files sample/RGB_to_CMY_to_RGB_1.ppm and sample/RGB_to_CMY_to_RGB_2.ppm are identical
 

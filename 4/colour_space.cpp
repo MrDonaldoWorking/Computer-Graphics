@@ -6,7 +6,7 @@
 
 // picture initialization
 
-picture::picture(int cnt, std::string const& name, COLOUR_PALETTE palette) : palette(palette) {
+picture::picture(int cnt, std::string const& name, COLOUR_SPACE space) : space(space) {
     switch (cnt) {
         case 1:
             if (name.substr(name.length() - 4, 4) != ".ppm") {
@@ -283,7 +283,7 @@ void YCoCg_to_RGB(int *pixel) {
 void picture::to_RGB() {
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
-            switch (palette) {
+            switch (space) {
                 case RGB:
                     return;
 
@@ -418,10 +418,10 @@ void RGB_to_YCoCg(int *pixel) {
     pixel[2] = correction(Cg + ONE_SECOND);
 }
 
-void picture::RGB_to(COLOUR_PALETTE palette) {
+void picture::RGB_to(COLOUR_SPACE space) {
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
-            switch (palette) {
+            switch (space) {
                 case RGB:
                     return;
 

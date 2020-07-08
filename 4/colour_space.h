@@ -9,8 +9,8 @@ double const ONE_SECOND = 0.5;
 double const K_R_601 = 0.299;
 double const K_G_601 = 0.587;
 double const K_B_601 = 0.114;
-double const K_R_709 = 0.0722;
-double const K_G_709 = 0.2126;
+double const K_R_709 = 0.2126;
+double const K_G_709 = 0.0722;
 double const K_B_709 = 0.7152;
 
 enum COLOUR_SPACE {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <string>
 #include <math.h>
 #include "dithering.h"
 
@@ -26,7 +27,7 @@ int main(int argc, char *argv[]) {
         std::cerr << e.what() << '\n';
         return 1;
     }
-    if (dithering < 0 || dithering > 77) {
+    if (dithering < 0 || dithering > 7) {
         std::cerr << "<dithering> must be an int value in [0..7]\n";
         return 1;
     }
@@ -37,13 +38,13 @@ int main(int argc, char *argv[]) {
     bool sRGB = (strcmp(argv[6], "0") == 0);
 
     std::string input = argv[1];
-    if (input.substr(input.length() - 4, 4) != ".pgm") {
+    if (input.length() < 4 || input.substr(input.length() - 4, 4) != ".pgm") {
         std::cerr << "Given input file is not pgm\n";
         return 1;
     }
 
     std::string output = argv[2];
-    if (output.substr(output.length() - 4, 4) != ".pgm") {
+    if (output.length() < 4 || output.substr(output.length() - 4, 4) != ".pgm") {
         std::cerr << "Given output file is not pgm\n";
         return 1;
     }

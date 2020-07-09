@@ -32,7 +32,7 @@ struct picture {
 };
 
 int const ORDERED_SIZE = 8;
-int const ORDERED[8][8] = {
+int const ORDERED[ORDERED_SIZE][ORDERED_SIZE] = {
     {0,  48, 12, 60, 3,  51, 15, 63},
     {32, 16, 44, 28, 35, 19, 47, 31},
     {8,  56, 4,  52, 11, 59, 7,  55},
@@ -43,7 +43,8 @@ int const ORDERED[8][8] = {
     {42, 26, 38, 22, 41, 25, 37, 21}
 };
 
-int const HALFTONE[4][4] = {
+int const HALFTONE_SIZE = 4;
+int const HALFTONE[HALFTONE_SIZE][HALFTONE_SIZE] = {
     {6,  12, 10, 3},
     {11, 15, 13, 7},
     {9,  14, 5,  1},
@@ -53,6 +54,8 @@ int const HALFTONE[4][4] = {
 double const ONE_SIXTEENTH = 1.0 / 16;
 double const ONE_FORTY_EIGHTH = 1.0 / 48;
 double const ONE_THIRTY_SECOND = 1.0 / 32;
+double const ONE_EIGHTH = 1.0 / 8;
+double const ONE_SECOND = 1.0 / 2;
 
 void without_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma);
 void ordered_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma);

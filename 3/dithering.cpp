@@ -235,63 +235,254 @@ void random_dithering(picture &pic, int const bitness, bool const sRGB, double c
     }
 }
 
-void Floyd_Steinberg_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {
+void update_error(std::vector<double> &error, std::vector<int> const& coefficients,
+                  int const pos, int const barrier, double const error_val) {
+    int shift = (coefficients.size() == 2 ? 3 : 0);
+    if (pos + 1 < barrier) {
+        error[pos + 1] += error_val * coefficients[3 - shift];
+    }
+    if (pos + 2 < barrier) {
+        error[pos + 2] += error_val * coefficients[4 - shift];
+    }
+    if (coefficients.size() == 2) {
+        return;
+    }
+    if (pos - 2  >= 0) {
+        error[pos - 2] += error_val * coefficients[0];
+    }
+    if (pos - 1 >= 0) {
+        error[pos - 1] += error_val * coefficients[1];
+    }
+    error[pos] += error_val * coefficients[2];
+}
+
+void dithering_with_errors(picture &pic, int const bitness, bool const sRGB, double const gamma,
+                           double const fraction, std::vector<int> const& prev,
+                           std::vector<int> const& curr, std::vector<int> const& next) {
+    std::vector<double> prev_error(pic.get_width());
     std::vector<double> curr_error(pic.get_width());
     std::vector<double> next_error(pic.get_width());
-    // int cnt = 0;
-    // std::ofstream out("test.log", std::ios::app);
+    if (prev.size() != 2) {
+        throw std::runtime_error("prev.size() must be 2");
+    }
+    if (curr.size() != 5) {
+        throw std::runtime_error("curr.size() must be 5");
+    }
+    if (next.size() != 5) {
+        throw std::runtime_error("next.size() must be 5");
+    }
     for (int h = 0; h < pic.get_height(); ++h) {
         for (int w = 0; w < pic.get_width(); ++w) {
-            double curr_val = get_nearest(pic.get(h, w), bitness, sRGB, gamma, true, false, curr_error[w]);
-            double middle = correction(pic.get(h, w), sRGB, gamma) + curr_error[w];
+            double curr_val = get_nearest(pic.get(h, w), bitness, sRGB, gamma, true, false, prev_error[w]);
+            double middle = correction(pic.get(h, w), sRGB, gamma) + prev_error[w];
 
-            // if (++cnt % 65536 <= 10) {
-            //     out << "curr_val = " << curr_val << std::endl;
-            // }
-
-            double error = (middle - curr_val) * ONE_SIXTEENTH;
-            // if (cnt % 65536 <= 10) {
-            //     out << "error = " << error << std::endl;
-            // }
-    
+            double error = (middle - curr_val) * fraction;
             if (w + 1 < pic.get_width()) {
-                curr_error[w + 1] += error * 7;
-                // if (cnt % 65536 <= 10) {
-                //     out << "curr_error[" << w + 1 << "] += " << error * 7 << " = " << curr_error[w + 1] << std::endl;
-                // }
+                prev_error[w + 1] += error * prev[0];
             }
-            if (h + 1 < pic.get_height()) {
+            if (w + 2 < pic.get_width()) {
+                prev_error[w + 2] += error * prev[1];
+            }
+            // if (h + 1 < pic.get_height()) {
+                if (w - 2 >= 0) {
+                    curr_error[w - 2] += error * curr[0];
+                }
                 if (w - 1 >= 0) {
-                    next_error[w - 1] += error * 3;
-                    // if (cnt % 65536 <= 10) {
-                    //     out << "next_error[" << w - 1 << "] += " << error * 3 << " = " << next_error[w - 1] << std::endl;
-                    // }
+                    curr_error[w - 1] += error * curr[1];
                 }
-                next_error[w] += error * 5;
-                // if (cnt % 65536 <= 10) {
-                //     out << "next_error[" << w << "] += " << error * 5 << " = " << next_error[w] << std::endl;
-                // }
+                curr_error[w] += error * curr[2];
                 if (w + 1 < pic.get_width()) {
-                    next_error[w + 1] += error;
-                    // if (cnt % 65536 <= 10) {
-                    //     out << "next_error[" << w + 1 << "] += " << error << " = " << next_error[w + 1] << std::endl;
-                    // }
+                    curr_error[w + 1] += error * curr[3];
                 }
-            }
+                if (w + 2 < pic.get_width()) {
+                    curr_error[w + 2] += error * curr[4];
+                }
+            // }
+            // if (h + 2 < pic.get_height()) {
+                if (w - 2 >= 0) {
+                    next_error[w - 2] += error * next[0];
+                }
+                if (w - 1 >= 0) {
+                    next_error[w - 1] += error * next[1];
+                }
+                next_error[w] += error * next[2];
+                if (w + 1 < pic.get_width()) {
+                    next_error[w + 1] += error * next[3];
+                }
+                if (w + 2 < pic.get_width()) {
+                    next_error[w + 2] += error * next[4];
+                }
+
             pic.set(h, w, curr_val);
         }
 
-        next_error.swap(curr_error);
+        prev_error.swap(curr_error);
+        curr_error.swap(next_error);
         next_error.assign(pic.get_width(), 0);
     }
 }
 
-void Jarvis_Judice_Ninke_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {
+void Floyd_Steinberg_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {
+    dithering_with_errors(pic, bitness, sRGB, gamma, ONE_SIXTEENTH, {7, 0}, {0, 3, 5, 1, 0}, {0, 0, 0, 0, 0});
+    return;
 
+    // std::vector<double> prev_error(pic.get_width());
+    // std::vector<double> curr_error(pic.get_width());
+    // // int cnt = 0;
+    // // std::ofstream out("test.log", std::ios::app);
+    // for (int h = 0; h < pic.get_height(); ++h) {
+    //     for (int w = 0; w < pic.get_width(); ++w) {
+    //         double curr_val = get_nearest(pic.get(h, w), bitness, sRGB, gamma, true, false, prev_error[w]);
+    //         double middle = correction(pic.get(h, w), sRGB, gamma) + prev_error[w];
+
+    //         // if (++cnt % 65536 <= 10) {
+    //         //     out << "curr_val = " << curr_val << std::endl;
+    //         // }
+
+    //         double error = (middle - curr_val) * ONE_SIXTEENTH;
+    //         // if (cnt % 65536 <= 10) {
+    //         //     out << "error = " << error << std::endl;
+    //         // }
+    
+    //         if (w + 1 < pic.get_width()) {
+    //             prev_error[w + 1] += error * 7;
+    //             // if (cnt % 65536 <= 10) {
+    //             //     out << "curr_error[" << w + 1 << "] += " << error * 7 << " = " << curr_error[w + 1] << std::endl;
+    //             // }
+    //         }
+    //         // if (h + 1 < pic.get_height()) {
+    //             if (w - 1 >= 0) {
+    //                 curr_error[w - 1] += error * 3;
+    //                 // if (cnt % 65536 <= 10) {
+    //                 //     out << "next_error[" << w - 1 << "] += " << error * 3 << " = " << next_error[w - 1] << std::endl;
+    //                 // }
+    //             }
+    //             curr_error[w] += error * 5;
+    //             // if (cnt % 65536 <= 10) {
+    //             //     out << "next_error[" << w << "] += " << error * 5 << " = " << next_error[w] << std::endl;
+    //             // }
+    //             if (w + 1 < pic.get_width()) {
+    //                 curr_error[w + 1] += error;
+    //                 // if (cnt % 65536 <= 10) {
+    //                 //     out << "next_error[" << w + 1 << "] += " << error << " = " << next_error[w + 1] << std::endl;
+    //                 // }
+    //             }
+    //         // }
+    //         pic.set(h, w, curr_val);
+    //     }
+
+    //     curr_error.swap(prev_error);
+    //     curr_error.assign(pic.get_width(), 0);
+    // }
+}
+
+void Jarvis_Judice_Ninke_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {
+    dithering_with_errors(pic, bitness, sRGB, gamma, ONE_FORTY_EIGHTH, {7, 5}, {3, 5, 7, 5, 3}, {1, 3, 5, 3, 1});
+    return;
+    // std::vector<double> prev_error(pic.get_width());
+    // std::vector<double> curr_error(pic.get_width());
+    // std::vector<double> next_error(pic.get_width());
+    // for (int h = 0; h < pic.get_height(); ++h) {
+    //     for (int w = 0; w < pic.get_width(); ++w) {
+    //         double curr_val = get_nearest(pic.get(h, w), bitness, sRGB, gamma, true, false, prev_error[w]);
+    //         double middle = correction(pic.get(h, w), sRGB, gamma) + prev_error[w];
+
+    //         double error = (middle - curr_val) * ONE_FORTY_EIGHTH;
+    //         if (w + 1 < pic.get_width()) {
+    //             prev_error[w + 1] += error * 7;
+    //         }
+    //         if (w + 2 < pic.get_width()) {
+    //             prev_error[w + 2] += error * 5;
+    //         }
+    //         // if (h + 1 < pic.get_height()) {
+    //             if (w - 2 >= 0) {
+    //                 curr_error[w - 2] += error * 3;
+    //             }
+    //             if (w - 1 >= 0) {
+    //                 curr_error[w - 1] += error * 5;
+    //             }
+    //             curr_error[w] += error * 7;
+    //             if (w + 1 < pic.get_width()) {
+    //                 curr_error[w + 1] += error * 5;
+    //             }
+    //             if (w + 2 < pic.get_width()) {
+    //                 curr_error[w + 2] += error * 3;
+    //             }
+    //         // }
+    //         // if (h + 2 < pic.get_height()) {
+    //             if (w - 2 >= 0) {
+    //                 next_error[w - 2] += error;
+    //             }
+    //             if (w - 1 >= 0) {
+    //                 next_error[w - 1] += error * 3;
+    //             }
+    //             next_error[w] += error * 5;
+    //             if (w + 1 < pic.get_width()) {
+    //                 next_error[w + 1] += error * 3;
+    //             }
+    //             if (w + 2 < pic.get_width()) {
+    //                 next_error[w + 2] += error;
+    //             }
+    //         // }
+
+    //         pic.set(h, w, curr_val);
+    //     }
+
+    //     prev_error.swap(curr_error);
+    //     curr_error.swap(next_error);
+    //     next_error.assign(pic.get_width(), 0);
+    // }
 }
 
 void Sierra_3_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {
+    dithering_with_errors(pic, bitness, sRGB, gamma, ONE_THIRTY_SECOND, {5, 3}, {2, 4, 5, 4, 2}, {0, 2, 3, 2, 0});
+    // std::vector<double> prev_error(pic.get_width());
+    // std::vector<double> curr_error(pic.get_width());
+    // std::vector<double> next_error(pic.get_width());
+    // for (int h = 0; h < pic.get_height(); ++h) {
+    //     for (int w = 0; w < pic.get_width(); ++w) {
+    //         double curr_val = get_nearest(pic.get(h, w), bitness, sRGB, gamma, true, false, prev_error[w]);
+    //         double middle = correction(pic.get(h, w), sRGB, gamma) + prev_error[w];
 
+    //         double error = (middle - curr_val) * ONE_THIRTY_SECOND;
+    //         if (w + 1 < pic.get_width()) {
+    //             prev_error[w + 1] += error * 5;
+    //         }
+    //         if (w + 2 < pic.get_width()) {
+    //             prev_error[w + 2] += error * 3;
+    //         }
+    //         // if (h + 1 < pic.get_height()) {
+    //             if (w - 2 >= 0) {
+    //                 curr_error[w - 2] += error * 2;
+    //             }
+    //             if (w - 1 >= 0) {
+    //                 curr_error[w - 1] += error * 4;
+    //             }
+    //             curr_error[w] += error * 5;
+    //             if (w + 1 < pic.get_width()) {
+    //                 curr_error[w + 1] += error * 4;
+    //             }
+    //             if (w + 2 < pic.get_width()) {
+    //                 curr_error[w + 2] += error * 2;
+    //             }
+    //         // }
+    //         // if (h + 2 < pic.get_height()) {
+    //             if (w - 1 >= 0) {
+    //                 next_error[w - 1] += error * 2;
+    //             }
+    //             next_error[w] += error * 3;
+    //             if (w + 1 < pic.get_width()) {
+    //                 next_error[w + 1] += error * 2;
+    //             }
+    //         // }
+
+    //         pic.set(h, w, curr_val);
+    //     }
+
+    //     prev_error.swap(curr_error);
+    //     curr_error.swap(next_error);
+    //     next_error.assign(pic.get_width(), 0);
+    // }
 }
 
 void Atkinson_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma) {

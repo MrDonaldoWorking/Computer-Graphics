@@ -51,6 +51,8 @@ int const HALFTONE[4][4] = {
 };
 
 double const ONE_SIXTEENTH = 1.0 / 16;
+double const ONE_FORTY_EIGHTH = 1.0 / 48;
+double const ONE_THIRTY_SECOND = 1.0 / 32;
 
 void without_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma);
 void ordered_dithering(picture &pic, int const bitness, bool const sRGB, double const gamma);

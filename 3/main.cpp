@@ -58,8 +58,7 @@ int main(int argc, char *argv[]) {
     char p;
     int type;
     in >> p >> type;
-    char line_separaor = in.get();
-    if (p != 'P' || type != 5 || line_separaor != '\n') {
+    if (p != 'P' || type != 5) {
         std::cerr << "The file " << input << " must have P5 format or couldn't read first line info\n";
         in.close();
         return EXIT_FAILURE;
@@ -67,17 +66,11 @@ int main(int argc, char *argv[]) {
 
     int width, height;
     in >> width >> height;
-    line_separaor = in.get();
     // Guaranteed height, width are ints and greater than 0
-    if (line_separaor != '\n') {
-        std::cerr << "Couldn't read width and height which have to be at the second line in the file " << input << '\n';
-        in.close();
-        return EXIT_FAILURE;
-    }
 
     int brightness;
     in >> brightness;
-    line_separaor = in.get();
+    char line_separaor = in.get();
     if (brightness != MAX_BRIGHTNESS || line_separaor != '\n') {
         std::cerr << "At the third line should be 255 or couldn't get that info in the file " << input << '\n';
         in.close();

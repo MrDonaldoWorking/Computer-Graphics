@@ -6,7 +6,7 @@
 
 // picture initialization
 
-picture::picture(int cnt, std::string const& name, COLOUR_PALETTE palette) : palette(palette) {
+picture::picture(int cnt, std::string const& name, COLOUR_SPACE palette) : palette(palette) {
     switch (cnt) {
         case 1:
             if (name.substr(name.length() - 4, 4) != ".ppm") {
@@ -257,7 +257,7 @@ void HSV_to_RGB(int *pixel) {
 }
 
 // Not working :(
-void HSL_V_to_RGB(int *pixel, COLOUR_PALETTE palette) {
+void HSL_V_to_RGB(int *pixel, COLOUR_SPACE palette) {
     double H = (pixel[0] / static_cast<double>(MAX_BRIGHTNESS)) * TWO_PIES;
     double S = pixel[1] / static_cast<double>(MAX_BRIGHTNESS);
     double L = pixel[2] / static_cast<double>(MAX_BRIGHTNESS);
@@ -442,7 +442,7 @@ void RGB_to_HSV(int *pixel) {
 }
 
 // Not working :(
-void RGB_to_HSL_V(int *pixel, COLOUR_PALETTE palette) {
+void RGB_to_HSL_V(int *pixel, COLOUR_SPACE palette) {
     int max_i = std::max(pixel[0], std::max(pixel[1], pixel[2]));
     int min_i = std::min(pixel[0], std::min(pixel[1], pixel[2]));
     double max_d = max_i / static_cast<double>(MAX_BRIGHTNESS);
@@ -513,7 +513,7 @@ void RGB_to_YCoCg(int *pixel) {
     pixel[2] = correction(Cg + ONE_SECOND);
 }
 
-void picture::RGB_to(COLOUR_PALETTE palette) {
+void picture::RGB_to(COLOUR_SPACE palette) {
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
             switch (palette) {

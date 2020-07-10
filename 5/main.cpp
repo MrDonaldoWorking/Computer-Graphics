@@ -95,8 +95,7 @@ int main(int argc, char* argv[]) {
     char p;
     int type;
     in >> p >> type;
-    char line_separator = in.get();
-    if (p != 'P' || type < 5 || type > 6 || line_separator != '\n') {
+    if (p != 'P' || type < 5 || type > 6) {
         std::cerr << "Couldn't read first line in the file or got unextected encoding, different from P5 or P6 in " << input << '\n';
         in.close();
         return EXIT_FAILURE;
@@ -104,8 +103,7 @@ int main(int argc, char* argv[]) {
 
     int width, height;
     in >> width >> height;
-    line_separator = in.get();
-    if (width <= 0 || height <= 0 || line_separator != '\n') {
+    if (width <= 0 || height <= 0) {
         std::cerr << "Couldn't get width an height info or they are not positive in " << input << '\n';
         in.close();
         return EXIT_FAILURE;
@@ -113,7 +111,7 @@ int main(int argc, char* argv[]) {
 
     int brightness;
     in >> brightness;
-    line_separator = in.get();
+    char line_separator = in.get();
     if (brightness != MAX_BRIGHTNESS || line_separator != '\n') {
         std::cerr << "Couldn't get the highest pixel brightness or it is not equals " << MAX_BRIGHTNESS << " in " << input << '\n';
         in.close();

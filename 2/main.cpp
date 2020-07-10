@@ -89,18 +89,16 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "Succsessfully read all data from console\n";
 
-    char p, line_separator;
+    char p;
     int type;
     in >> p >> type;
-    line_separator = in.get();
-    if (p != 'P' || (type < 5 && type > 6) || line_separator != '\n') {
+    if (p != 'P' || (type < 5 && type > 6)) {
         return show_message(in, "Expected P5 or P6 at a first line of ", argv[1]);
     }
 
     int width, height;
     in >> width >> height;
-    line_separator = in.get();
-    if (width <= 0 || height <= 0 || line_separator != '\n') {
+    if (width <= 0 || height <= 0) {
         return show_message(in, "Expected two positive integer values at a second line of ", argv[1]);
     }
     if (x0 >= width || x1 >= width || y0 >= height || y1 >= height) {
@@ -109,7 +107,7 @@ int main(int argc, char* argv[]) {
 
     int max_brightness;
     in >> max_brightness;
-    line_separator = in.get();
+    char line_separator = in.get();
     if (max_brightness != MAX_BRIGHTNESS || line_separator != '\n') {
         return show_message(in, "Expected 255 at a third line of ", argv[1]);
     }

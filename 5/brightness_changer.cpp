@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
-#include <fstream>
 #include "brightness_changer.h"
 
 void clear_array(int ***arr, int n, int m) {
@@ -41,15 +40,6 @@ inline int correct_bounds(double const val) {
 int change_brightness(double const val, double const shift, double const factor) {
     return correct_bounds((val - shift) * factor);
 }
-
-// void run_through_all(int const n, int const m, int const shift, double const factor,
-//                      brightness_changer_function_t const& transform) {
-//     for (int i = 0; i < n; ++i) {
-//         for (int j = 0; j < m; ++j) {
-//             transform(i, j, shift, factor);
-//         }
-//     }
-// }
 
 void picture::manual_RGB(int shift, double factor) {
     for (int h = 0; h < height; ++h) {
@@ -113,68 +103,6 @@ void picture::manual_YCbCr(int const shift, double const factor) {
     }
 }
 
-// std::pair<int const, int const> picture::find_min_max(bool is_YCbCr) {
-//     double max_value = 0, min_value = MAX_BRIGHTNESS;
-//     for (int h = 0; h < height; ++h) {
-//         for (int w = 0; w < width; ++w) {
-//             for (int color = 0; color < colors; ++color) {
-//                 max_value = fmax(max_value, data[h][w][color]);
-//                 min_value = fmin(min_value, data[h][w][color]);
-//             }
-//         }
-//     }
-
-//     return std::make_pair(min_value, max_value);
-// }
-
-// void picture::auto_changing(brightness_changer_function_t const& manual,
-//                             double const min_value, double const max_value) {
-//     manual(min_value, MAX_BRIGHTNESS / static_cast<double>(max_value - min_value));
-// }
-
-// std::pair<int const, int const> picture::find_min_max_with_skip() {
-//     long long brightnesses[MAX_BRIGHTNESS + 1];
-//     for (int br = 0; br <= MAX_BRIGHTNESS; ++br) {
-//         brightnesses[br] = 0;
-//     }
-
-//     for (int h = 0; h < height; ++h) {
-//         for (int w = 0; w < width; ++w) {
-//             for (int color = 0; color < colors; ++color) {
-//                 ++brightnesses[data[h][w][color]];
-//             }
-//         }
-//     }
-
-//     int max_value = 0;
-//     long long picture_size = height * width * colors;
-//     double skip = 0;
-//     for (; max_value <= MAX_BRIGHTNESS; ++max_value) {
-//         skip += brightnesses[max_value] / static_cast<double>(picture_size);
-//         if (skip > PERCENTAGE) {
-//             break;
-//         }
-//     }
-
-//     int min_value = MAX_BRIGHTNESS;
-//     skip = 0;
-//     for (; min_value >= 0 && skip < PERCENTAGE; --min_value) {
-//         skip += brightnesses[max_value] / static_cast<double>(picture_size);
-//         if (skip > PERCENTAGE) {
-//             break;
-//         }
-//     }
-
-//     return std::make_pair(min_value, max_value);
-// }
-
-// void picture::auto_changing_with_skip(brightness_changer_function_t const& manual) {
-//     auto min_max = find_min_max_with_skip();
-//     manual(min_max.first, MAX_BRIGHTNESS / static_cast<double>(min_max.second - min_max.first));
-// }
-
-
-
 void picture::auto_RGB() {
     int max_value = 0, min_value = MAX_BRIGHTNESS;
     for (int h = 0; h < height; ++h) {
@@ -194,10 +122,6 @@ void picture::auto_RGB() {
 
 void picture::auto_YCbCr() {
     double min_value = MAX_BRIGHTNESS, max_value = 0;
-    int cnt = 0;
-    std::ofstream out("test.log");
-    out.precision(1);
-    out << std::fixed;
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
             double *pixel = obtain_pixel(data[h][w], colors);
@@ -205,16 +129,10 @@ void picture::auto_YCbCr() {
             RGB_to_YCbCr(pixel, K_R_601, K_G_601, K_B_601);
             min_value = fmin(min_value, pixel[0]);
             max_value = fmax(max_value, pixel[0]);
-            if (++cnt % 65536 <= 10) {
-                out << "=== " << cnt << " ===\n";
-                out << data[h][w][0] << ' ' << data[h][w][1] << ' ' << data[h][w][2] << '\n';
-                out << min_value << ' ' << max_value << ' ' << pixel[0] << ' ' << pixel[1] << ' ' << pixel[2] << std::endl;
-            }
 
             delete[] pixel;
         }
     }
-    std::cout << min_value << ' ' << max_value << '\n';
 
     // auto_changing([this] (manual_args) { manual_YCbCr(shift, factor); }, min_value, max_value);
     double const shift = min_value;
@@ -239,7 +157,6 @@ void picture::auto_with_skip_RGB() {
     std::nth_element(brightnesses.begin(), brightnesses.begin() + pos, brightnesses.end(), std::greater<int>());
     int max_value = brightnesses[pos];
     // auto_changing_with_skip([this] (manual_args) { manual_RGB(shift, factor); });
-    std::cout << min_value << ' ' << max_value << '\n';
 
     int const shift = min_value;
     double const factor = MAX_BRIGHTNESS / static_cast<double>(max_value - min_value);
@@ -250,30 +167,22 @@ void picture::auto_with_skip_RGB() {
 
 void picture::auto_with_skip_YCbCr() {
     std::vector<double> brightnesses;
-    std::ofstream out("test.log");
-    int cnt = 0;
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
             double *pixel = obtain_pixel(data[h][w], colors);
 
             RGB_to_YCbCr(pixel, K_R_601, K_G_601, K_B_601);
             brightnesses.push_back(pixel[0]);
-            if (++cnt % 65536 <= 10) {
-                out << "=== " << cnt << " ===\n";
-                out << brightnesses.back() << std::endl;
-            }
 
             delete[] pixel;
         }
     }
 
     double pos = static_cast<int>(PERCENTAGE * height * width * colors);
-    std::cout << pos << '\n';
     std::nth_element(brightnesses.begin(), brightnesses.begin() + pos, brightnesses.end());
     double min_value = brightnesses[pos];
     std::nth_element(brightnesses.begin(), brightnesses.begin() + pos, brightnesses.end(), std::greater<double>());
     int max_value = brightnesses[pos];
-    std::cout << min_value << ' ' << max_value << '\n';
 
     // auto_changing_with_skip([this] (manual_args) { manual_YCbCr(shift, factor); });
     double const shift = min_value;

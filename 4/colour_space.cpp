@@ -104,26 +104,21 @@ void picture::read_meta_data(std::ifstream &in, std::string const& name, int enc
         force_close("Couldn't find file" + name + '\n');
     }
 
-    char p, line_separator;
+    char p;
     int type;
     in >> p >> type;
-    line_separator = in.get();
-    if (p != 'P' || type != encoding || line_separator != '\n') {
+    if (p != 'P' || type != encoding) {
         force_close("Expected P" + std::to_string(encoding) +  " encoding in " + name);
     }
 
     int this_height, this_width;
     in >> this_width >> this_height;
-    line_separator = in.get();
     // guaranteed that width > 0 && height > 0 && they are ints
-    if (line_separator != '\n') {
-        force_close("Couldn't read width and height\n");
-    }
     update_int("Heights", height, this_height);
     update_int("Width", width, this_width);
 
     in >> max_brightness;
-    line_separator = in.get();
+    char line_separator = in.get();
     if (max_brightness != 255 || line_separator != '\n') {
         force_close("Couldn't read max brightness or max brightness is not 255\n");
     }

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <cstdlib>
 
 int const MAX_BRIGHTNESS = 255;
 double const S_RGB_BARRIER = 0.04045;

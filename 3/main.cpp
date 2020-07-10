@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     if (argc != 7) {
         std::cerr << "Got " << argc << " arguments\n";
         std::cerr << "Usage: <input file> <output file> <gradient> <dithering> <bitness> <gamma>\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // Guaranteed argv[3] == "0" or "1"
@@ -21,15 +21,15 @@ int main(int argc, char *argv[]) {
     } catch (std::invalid_argument const& e) {
         std::cerr << "<dithering> must be an int value\n";
         std::cerr << e.what() << '\n';
-        return 1;
+        return EXIT_FAILURE;
     } catch (std::out_of_range const& e) {
         std::cerr << "Got too big value in <dithering> to parse as int\n";
         std::cerr << e.what() << '\n';
-        return 1;
+        return EXIT_FAILURE;
     }
     if (dithering < 0 || dithering > 7) {
         std::cerr << "<dithering> must be an int value in [0..7]\n";
-        return 1;
+        return EXIT_FAILURE;
     }
     // Guaranteed argv[5] in [0..8]
     int bitness = std::stoi(argv[5]);
@@ -40,19 +40,19 @@ int main(int argc, char *argv[]) {
     std::string input = argv[1];
     if (input.length() < 4 || input.substr(input.length() - 4, 4) != ".pgm") {
         std::cerr << "Given input file is not pgm\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     std::string output = argv[2];
     if (output.length() < 4 || output.substr(output.length() - 4, 4) != ".pgm") {
         std::cerr << "Given output file is not pgm\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     std::ifstream in(argv[1]);
     if (!in.is_open()) {
         std::cerr << "Couldn't open the file " << argv[1] << '\n';
-        return 1;
+        return EXIT_FAILURE;
     }
 
     char p;
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     if (p != 'P' || type != 5 || line_separaor != '\n') {
         std::cerr << "The file " << input << " must have P5 format or couldn't read first line info\n";
         in.close();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int width, height;
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     if (line_separaor != '\n') {
         std::cerr << "Couldn't read width and height which have to be at the second line in the file " << input << '\n';
         in.close();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int brightness;
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     if (brightness != MAX_BRIGHTNESS || line_separaor != '\n') {
         std::cerr << "At the third line should be 255 or couldn't get that info in the file " << input << '\n';
         in.close();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     picture pic(height, width, brightness, gradient, in);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
     if (!out.is_open()) {
         std::cerr << "Couldn't open the output file " << output << '\n';
         // picture destructor successfully calls clear_array()
-        return 1;
+        return EXIT_FAILURE;
     }
 
     out << "P5\n";
@@ -135,12 +135,12 @@ int main(int argc, char *argv[]) {
             if (!out || out.bad()) {
                 std::cerr << "Something happened with an output stream while writing in it data\n";
                 // picture destructor successfully calls clear_array()
-                return 1;
+                return EXIT_FAILURE;
             }
             out << static_cast<unsigned char>(floor(data[h][w]));
         }
     }
     out.close();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

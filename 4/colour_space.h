@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <cstdlib>
 
 int const MAX_BRIGHTNESS = 255;
 int const TWO_PIES = 360;

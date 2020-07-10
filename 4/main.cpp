@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         std::cerr << "Got " << argc << " arguments\n";
         std::cerr << "Usage: -f <from_color_space> -t <to_color_space> -i <count>"
                      " <input_file_name> -o <count> <output_file_name>";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     COLOUR_SPACE colour_space_from = ERROR, colour_space_to = ERROR;
@@ -56,26 +56,26 @@ int main(int argc, char *argv[]) {
 
                     default:
                         std::cerr << argv[arg] << " is not supported\n";
-                        return 1;
+                        return EXIT_FAILURE;
                 }
             }
         }
     } catch (std::runtime_error const& e) {
         std::cerr << e.what();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     if (colour_space_from == ERROR) {
         std::cerr << "Input file's colour space info not found\n";
-        return 1;
+        return EXIT_FAILURE;
     }
     if (colour_space_to == ERROR) {
         std::cerr << "Output file's colour space info not found\n";
-        return 1;
+        return EXIT_FAILURE;
     }
     if (inputs == 0 || input_file_name.empty()) {
         std::cerr << "Input file or files not found\n";
-        return 1;
+        return EXIT_FAILURE;
     }
     if (outputs == 0 || output_file_name.empty()) {
         std::cerr << "Output file or files not found\n";
@@ -88,9 +88,9 @@ int main(int argc, char *argv[]) {
         pic.write(outputs, output_file_name);
     } catch (std::runtime_error const& e) {
         std::cerr << e.what();
-        return 1;
+        return EXIT_FAILURE;
     }
     // all arguments are correct according to guarantee
 
-    return 0;
+    return EXIT_SUCCESS;
 }

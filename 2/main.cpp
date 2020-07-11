@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstdlib>
 #include "line_drawer.h"
 
 void clear_array(int **data, int height) {
@@ -13,13 +14,13 @@ void clear_array(int **data, int height) {
 int show_message(std::ifstream &in, std::string const &message) {
     std::cerr << message << '\n';
     in.close();
-    return 1;
+    return EXIT_FAILURE;
 }
 
 int show_message(std::ifstream &in, char const *message, char const *file) {
     std::cerr << message << file << '\n';
     in.close();
-    return 1;
+    return EXIT_FAILURE;
 }
 
 int show_message(std::ifstream &in, char const *message, char const *file,
@@ -32,13 +33,13 @@ int main(int argc, char* argv[]) {
     if (argc != 9 && argc != 10) {
         std::cerr << "Got " << argc << " arguments\n";
         std::cerr << "Usage: <input filename> <output filename> <line brightness> <line thickness> <x0> <y0> <x1> <y1> <gamma?>\n";
-        return 1;
+        return EXIT_FAILURE;
     }
 
     std::ifstream in(argv[1]);
     if (!in.is_open()) {
         std::cerr << "Couldn't open " << argv[1];
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int brightness;
@@ -81,11 +82,11 @@ int main(int argc, char* argv[]) {
     } catch (std::invalid_argument const& e) {
         std::cerr << "Got not a number value\n";
         std::cerr << e.what();
-        return 1;
+        return EXIT_FAILURE;
     } catch (std::out_of_range const& e) {
         std::cerr << "Brightness value is too big\n";
         std::cerr << e.what();
-        return 1;
+        return EXIT_FAILURE;
     }
     std::cout << "Succsessfully read all data from console\n";
 
@@ -123,15 +124,21 @@ int main(int argc, char* argv[]) {
 
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
-            data[h][w] = in.get();
-            if (data[h][w] == -1 || in.gcount() == 0 || in.eof()) {
-                return show_message(in, "Unexpected data size: not enough bytes in ", argv[1], data, height);
-            }
+            data[h][w] = 0;
         }
     }
-    if (!(in.get() == -1) || !in.eof()) {
-        return show_message(in, "Unexpected data size: redundant bytes in ", argv[1], data, height);
-    }
+
+    // for (int h = 0; h < height; ++h) {
+    //     for (int w = 0; w < width; ++w) {
+    //         data[h][w] = in.get();
+    //         if (data[h][w] == -1 || in.gcount() == 0 || in.eof()) {
+    //             return show_message(in, "Unexpected data size: not enough bytes in ", argv[1], data, height);
+    //         }
+    //     }
+    // }
+    // if (!(in.get() == -1) || !in.eof()) {
+    //     return show_message(in, "Unexpected data size: redundant bytes in ", argv[1], data, height);
+    // }
     std::cout << "Succsessfully read all data from file\n";
 
     line_drawer drawer(brightness, thickness, x0, y0, x1, y1, gamma, sRGB, height, width, max_brightness, data);
@@ -142,7 +149,7 @@ int main(int argc, char* argv[]) {
     if (!out.is_open()) {
         std::cerr << "Couldn't open " << argv[2];
         in.close();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     out << "P5\n";
@@ -156,7 +163,7 @@ int main(int argc, char* argv[]) {
                 std::cerr << "An error occurred while writing data\n";
                 out.close();
                 // array data will be cleared in pictore destructor (in line_drawer)
-                return 1;
+                return EXIT_FAILURE;
             }
             out << static_cast<unsigned char>(data[h][w]);
         }
@@ -165,5 +172,5 @@ int main(int argc, char* argv[]) {
 
     out.close();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

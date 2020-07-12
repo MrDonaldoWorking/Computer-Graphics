@@ -65,7 +65,7 @@ void picture::read_data_P5(std::string const& file) {
     std::string extension = file.substr(dot_pos);
     for (int num = 0; num < 3; ++num) {
         std::string file_name = name + "_" + std::to_string(num + 1) + extension;
-        std::ifstream in(file_name);
+        std::ifstream in(file_name, std::ios::binary);
         read_meta_data(in, file_name, 5);
 
         // File contains width * height bytes of data
@@ -78,7 +78,7 @@ void picture::read_data_P5(std::string const& file) {
 }
 
 void picture::read_data_P6(std::string const& name) {
-    std::ifstream in(name);
+    std::ifstream in(name, std::ios::binary);
     read_meta_data(in, name, 6);
 
     // File contains width * height * 3 bytes of data
@@ -475,7 +475,7 @@ void picture::write(int cnt, std::string const& name) {
 }
 
 void picture::write_to_one_P6(std::string const& file) {
-    std::ofstream out(file);
+    std::ofstream out(file, std::ios::binary);
     if (!out.is_open()) {
         force_close("Couldn't open file " + file + " to write\n");
     }
@@ -503,7 +503,7 @@ void picture::write_to_three_P5(std::string const& file) {
     for (int num = 0; num < 3; ++num) {
         std::string file_name = name + "_" + std::to_string(num + 1) + extension;
         // std::cout << "Writing info into " << file_name << '\n';
-        std::ofstream out(file_name);
+        std::ofstream out(file_name, std::ios::binary);
         if (!out.is_open()) {
             force_close("Could't open file " + file_name + " to write\n");
         }

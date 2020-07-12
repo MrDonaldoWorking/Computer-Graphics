@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::ifstream in(argv[1]);
+    std::ifstream in(argv[1], std::ios::binary);
     if (!in.is_open()) {
         std::cerr << "Couldn't open the file " << argv[1] << '\n';
         return EXIT_FAILURE;
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
             break;
     }
 
-    std::ofstream out(output);
+    std::ofstream out(output, std::ios::binary);
     if (!out.is_open()) {
         std::cerr << "Couldn't open the output file " << output << '\n';
         // picture destructor successfully calls clear_array()

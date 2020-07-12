@@ -124,21 +124,15 @@ int main(int argc, char* argv[]) {
 
     for (int h = 0; h < height; ++h) {
         for (int w = 0; w < width; ++w) {
-            data[h][w] = 0;
+            data[h][w] = in.get();
+            if (data[h][w] == -1 || in.gcount() == 0 || in.eof()) {
+                return show_message(in, "Unexpected data size: not enough bytes in ", argv[1], data, height);
+            }
         }
     }
-
-    // for (int h = 0; h < height; ++h) {
-    //     for (int w = 0; w < width; ++w) {
-    //         data[h][w] = in.get();
-    //         if (data[h][w] == -1 || in.gcount() == 0 || in.eof()) {
-    //             return show_message(in, "Unexpected data size: not enough bytes in ", argv[1], data, height);
-    //         }
-    //     }
-    // }
-    // if (!(in.get() == -1) || !in.eof()) {
-    //     return show_message(in, "Unexpected data size: redundant bytes in ", argv[1], data, height);
-    // }
+    if (!(in.get() == -1) || !in.eof()) {
+        return show_message(in, "Unexpected data size: redundant bytes in ", argv[1], data, height);
+    }
     std::cout << "Succsessfully read all data from file\n";
 
     line_drawer drawer(brightness, thickness, x0, y0, x1, y1, gamma, sRGB, height, width, max_brightness, data);

@@ -10,18 +10,6 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string const input(argv[1]);
-    if (input.length() < 4 || input.substr(input.length() - 4, 4) != ".pnm") {
-        std::cerr << "Input file must have pnm extension\n";
-        return EXIT_FAILURE;
-    }
-
-    std::string const output(argv[2]);
-    if (output.length() < 4 || output.substr(output.length() - 4, 4) != ".pnm") {
-        std::cerr << "Output file must have pnm extension\n";
-        return EXIT_FAILURE;
-    }
-
     int change;
     try {
         change = std::stoi(argv[3]);
@@ -86,9 +74,9 @@ int main(int argc, char* argv[]) {
             return EXIT_FAILURE;
     }
 
-    std::ifstream in(input);
+    std::ifstream in(argv[1], std::ios::binary);
     if (!in.is_open()) {
-        std::cerr << "Couldn't open " << input << '\n';
+        std::cerr << "Couldn't open " << argv[1] << '\n';
         return EXIT_FAILURE;
     }
 
@@ -96,7 +84,7 @@ int main(int argc, char* argv[]) {
     int type;
     in >> p >> type;
     if (p != 'P' || type < 5 || type > 6) {
-        std::cerr << "Couldn't read first line in the file or got unextected encoding, different from P5 or P6 in " << input << '\n';
+        std::cerr << "Couldn't read first line in the file or got unextected encoding, different from P5 or P6 in " << argv[1] << '\n';
         in.close();
         return EXIT_FAILURE;
     }
@@ -104,7 +92,7 @@ int main(int argc, char* argv[]) {
     int width, height;
     in >> width >> height;
     if (width <= 0 || height <= 0) {
-        std::cerr << "Couldn't get width an height info or they are not positive in " << input << '\n';
+        std::cerr << "Couldn't get width an height info or they are not positive in " << argv[1] << '\n';
         in.close();
         return EXIT_FAILURE;
     }
@@ -113,7 +101,7 @@ int main(int argc, char* argv[]) {
     in >> brightness;
     char line_separator = in.get();
     if (brightness != MAX_BRIGHTNESS || line_separator != '\n') {
-        std::cerr << "Couldn't get the highest pixel brightness or it is not equals " << MAX_BRIGHTNESS << " in " << input << '\n';
+        std::cerr << "Couldn't get the highest pixel brightness or it is not equals " << MAX_BRIGHTNESS << " in " << argv[1] << '\n';
         in.close();
         return EXIT_FAILURE;
     }
@@ -133,7 +121,7 @@ int main(int argc, char* argv[]) {
                 data[h][w][color] = in.get();
 
                 if (data[h][w][color] == -1 || in.gcount() == 0 || in.eof()) {
-                    std::cerr << "Unexpected data size: not ample bytes in " << input << '\n';
+                    std::cerr << "Unexpected data size: not ample bytes in " << argv[1] << '\n';
                     in.close();
                     clear_array(data, height, width);
                     return EXIT_FAILURE;
@@ -142,7 +130,7 @@ int main(int argc, char* argv[]) {
         }
     }
     if (!(in.get() == -1) || !in.eof()) {
-        std::cerr << "Unexpected data size: redundant bytes in " << input << '\n';
+        std::cerr << "Unexpected data size: redundant bytes in " << argv[1] << '\n';
         in.close();
         clear_array(data, height, width);
         return EXIT_FAILURE;
@@ -156,9 +144,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::ofstream out(output);
+    std::ofstream out(argv[2], std::ios::binary);
     if (!out.is_open()) {
-        std::cerr << "Couldn't open " << output << '\n';
+        std::cerr << "Couldn't open " << argv[2] << '\n';
         return EXIT_FAILURE;
     }
 

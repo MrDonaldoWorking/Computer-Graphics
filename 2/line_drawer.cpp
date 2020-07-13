@@ -25,6 +25,10 @@ double point::get_y() const {
     return y;
 }
 
+bool point::operator<(point const& p) const {
+    return x < p.x || x == p.x && y < p.x;
+}
+
 picture::picture(int h, int w, int m, int **data)
     : height(h), width(w), max_brightness(m), data(data) {}
 
@@ -78,11 +82,11 @@ inline double sqr(double const x) {
 }
 
 double rectangle::get_height() const {
-    return sqr(A.get_x() - B.get_x()) + sqr(A.get_y() - B.get_y());
+    return sqrt(sqr(A.get_x() - B.get_x()) + sqr(A.get_y() - B.get_y()));
 }
 
 double rectangle::get_width() const {
-    return sqr(B.get_x() - C.get_x()) + sqr(B.get_y() - C.get_y());
+    return sqrt(sqr(B.get_x() - C.get_x()) + sqr(B.get_y() - C.get_y()));
 }
 
 double rectangle::get_leftest_x() const {
@@ -128,23 +132,44 @@ bool rectangle::is_entirelly_inside(rectangle const& other) const {
 }
 
 double rectangle::intersect_with(rectangle const& other) const {
+    // static std::ofstream out("test.log", std::ios::app);
+    // static int cnt_ = 0;
+    // ++cnt_;
+
     if (is_entirelly_inside(other)) {
+        // if (cnt_ % 100 <= 10) {
+        //     out << "=== " << cnt_ << " ===" << std::endl;
+        //     out << "Pixel is in line, " << other.get_square() << std::endl;
+        // }
         return other.get_square();
     }
 
+    // if (cnt_ % 100 <= 10) {
+    //     out << "=== " << cnt_ << " ===" << std::endl;
+    //     out << "Pixel is not in line" << std::endl;
+    // }
     double x_step = other.get_width() / STEP;
     double y_step = other.get_height() / STEP;
 
     // split pixel into 100 smaller squares
     int cnt = 0;
-    for (double x = other.get_leftest_x() + x_step; x <= other.get_rightest_x(); x += x_step) {
-        for (double y = other.get_lowest_y() + y_step; y <= other.get_highest_y(); y += y_step) {
+    // if (cnt_ % 100 <= 10) {
+    //     out << "found: ";
+    // }
+    for (double x = other.get_leftest_x(); x <= other.get_rightest_x(); x += x_step) {
+        for (double y = other.get_lowest_y(); y <= other.get_highest_y(); y += y_step) {
             if (is_inside(point(x, y))) {
+                // if (cnt_ % 100 <= 10) {
+                //     out << "(" << x << ", " << y << ") ";
+                // }
                 ++cnt;
             }
         }
     }
 
+    // if (cnt_ % 100 <= 10) {
+    //     out << "result is " << cnt << " / " << sqr(STEP) << " = " << cnt / sqr(STEP) << std::endl;
+    // }
     return cnt / sqr(STEP);
 }
 
@@ -187,36 +212,72 @@ double gamma_forward(double const val, double const gamma) {
     return pow(val, 1 / gamma);
 }
 
-inline double correction(double const val, double const percentage, int const brightness) {
-    return val * (1 - percentage) + percentage * brightness;
+inline double correction(double val, double const percentage, double const brightness) {
+    val *= (1 - percentage);
+    val += percentage * brightness;
+    return val;
+}
+
+inline int correct_bounds(double const x) {
+    return static_cast<int>(fmin(MAX_BRIGHTNESS, fmax(0, x)));
 }
 
 void line_drawer::fill_pixel(int const x, int const y, double const square) {
+    // static std::ofstream out("test.log", std::ios::app);
+    // static int cnt = 0;
+    // ++cnt;
+
     if (x < 0 || x >= pic.get_w() || y < 0 || y >= pic.get_h()) {
         return;
     }
 
     double value = pic.get(y, x) / MAX_BRIGHTNESS;
-    double percentage = brightness / MAX_BRIGHTNESS;
+    double curr_brightness = brightness / MAX_BRIGHTNESS;
+    // if (cnt % 100 <= 10) {
+    //     out << "=== " << cnt << " ===\n";
+    //     out << "x = " << x << ", y = " << y << '\n';
+    //     out << "square = " << square << '\n';
+    //     out << "value = " << value << '\n';
+    //     out << "percentage = " << curr_brightness << '\n';
+    // }
     if (sRGB) {
         // reverse transformation
         value = sRGB_reverse(value);
-        percentage = sRGB_reverse(percentage);
+        curr_brightness = sRGB_reverse(curr_brightness);
 
-        value = correction(value, percentage, brightness);
+        // if (cnt % 100 <= 10) {
+        //     out << "\nAfter reverse transformation\n";
+        //     out << "value = " << value << '\n';
+        //     out << "percentage = " << curr_brightness << '\n';
+        // }
+
+        value = correction(value, square, curr_brightness);
+
+        // if (cnt % 100 <= 10) {
+        //     out << "\nAfter correction\n";
+        //     out << "value = " << value << '\n';
+        // }
 
         // forward transformation
         value = sRGB_forward(value);
+        // if (cnt % 100 <= 10) {
+        //     out << "\nAfter forward transformation\n";
+        //     out << "value = " << value << '\n';
+        // }
     } else {
         value = gamma_reverse(value, gamma);
-        percentage = gamma_reverse(percentage, gamma);
+        curr_brightness = gamma_reverse(curr_brightness, gamma);
 
-        value = correction(value, percentage, brightness);
+        value = correction(value, curr_brightness, brightness);
 
         value = gamma_forward(value, gamma);
     }
 
-    pic.set(y, x, value * MAX_BRIGHTNESS);
+    // if (cnt % 100 <= 10) {
+    //     out << "data[" << y << "][" << x << "] = " << correct_bounds(value * MAX_BRIGHTNESS) << std::endl;
+    // }
+
+    pic.set(y, x, correct_bounds(value * MAX_BRIGHTNESS));
 }
 
 inline int get_positive(double const x) {
@@ -224,17 +285,17 @@ inline int get_positive(double const x) {
 }
 
 void line_drawer::draw_line() {
-    std::ofstream out("test.log");
-    out.precision(5);
-    out << std::fixed;
+    // std::ofstream out("test.log");
+    // out.precision(5);
+    // out << std::fixed;
 
     point const line_vec = point(to.get_x() - from.get_x(), to.get_y() - from.get_y());
-    out << "line_vec = (" << line_vec.get_x() << ", " << line_vec.get_y() << ")\n";
+    // out << "line_vec = (" << line_vec.get_x() << ", " << line_vec.get_y() << ")\n";
 
     point const thick_vec = (check_equals(line_vec.get_x(), 0) ? point(1, 0) : point(-line_vec.get_y() / line_vec.get_x(), 1));
     double const wideness = sqrt(sqr(thickness / 2) / (sqr(thick_vec.get_x()) + sqr(thick_vec.get_y())));
-    out << "thick_vec = (" << thick_vec.get_x() << ", " << thick_vec.get_y() << ")\n";
-    out << "wideness = " << wideness << '\n';
+    // out << "thick_vec = (" << thick_vec.get_x() << ", " << thick_vec.get_y() << ")\n";
+    // out << "wideness = " << wideness << '\n';
 
     double const shift_x = wideness * thick_vec.get_x();
     double const shift_y = wideness * thick_vec.get_y();
@@ -244,22 +305,22 @@ void line_drawer::draw_line() {
     point const C = point(to.get_x() - shift_x, to.get_y() - shift_y);
     point const D = point(to.get_x() + shift_x, to.get_y() + shift_y);
     rectangle const line = rectangle(A, B, C, D);
-    out << "A = (" << A.get_x() << ", " << A.get_y() << ")\n";
-    out << "B = (" << B.get_x() << ", " << B.get_y() << ")\n";
-    out << "C = (" << C.get_x() << ", " << C.get_y() << ")\n";
-    out << "D = (" << D.get_x() << ", " << D.get_y() << ")\n";
+    // out << "A = (" << A.get_x() << ", " << A.get_y() << ")\n";
+    // out << "B = (" << B.get_x() << ", " << B.get_y() << ")\n";
+    // out << "C = (" << C.get_x() << ", " << C.get_y() << ")\n";
+    // out << "D = (" << D.get_x() << ", " << D.get_y() << ")\n";
 
     double const start_x = line.get_leftest_x();
-    out << "start_x = " << get_positive(start_x - AMPLE_SHIFT) << '\n';
+    // out << "start_x = " << get_positive(start_x - AMPLE_SHIFT) << '\n';
     double const end_x = line.get_rightest_x();
-    out << "end_x = " << get_positive(end_x + AMPLE_SHIFT) << '\n';
+    // out << "end_x = " << get_positive(end_x + AMPLE_SHIFT) << '\n';
     double const start_y = line.get_lowest_y();
-    out << "start_y = " << get_positive(start_y - AMPLE_SHIFT) << '\n';
+    // out << "start_y = " << get_positive(start_y - AMPLE_SHIFT) << '\n';
     double const end_y = line.get_highest_y();
-    out << "end_y = " << get_positive(end_y + AMPLE_SHIFT) << std::endl;
-    for (int x = get_positive(start_x - AMPLE_SHIFT); x <= get_positive(end_x + AMPLE_SHIFT); ++x) {
-        for (int y = get_positive(start_y - AMPLE_SHIFT); y <= get_positive(end_y + AMPLE_SHIFT); ++y) {
-            rectangle const curr_pixel = rectangle(point(x, y), point(x + 1, y), point(x, y + 1), point(x + 1, y + 1));
+    // out << "end_y = " << get_positive(end_y + AMPLE_SHIFT) << std::endl;
+    for (int x = get_positive(start_x - AMPLE_SHIFT); x < get_positive(end_x + AMPLE_SHIFT); ++x) {
+        for (int y = get_positive(start_y - AMPLE_SHIFT); y < get_positive(end_y + AMPLE_SHIFT); ++y) {
+            rectangle const curr_pixel = rectangle(point(x, y), point(x + 1, y), point(x + 1, y + 1), point(x, y + 1));
             double const square = line.intersect_with(curr_pixel);
             fill_pixel(x, y, square);
         }

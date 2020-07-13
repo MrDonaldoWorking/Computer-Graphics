@@ -2,7 +2,7 @@
 #define LINE_DRAWER
 
 double const MAX_BRIGHTNESS = 255.0;
-int const AMPLE_SHIFT = 5;
+int const AMPLE_SHIFT = 3;
 int const STEP = 10;
 
 struct point {
@@ -10,6 +10,8 @@ struct point {
     explicit point(double const x, double const y);
    //  point(std::initializer_list<double> const& list);
     ~point() = default;
+
+    bool operator<(point const& p) const;
 
     inline double get_x() const;
     inline double get_y() const;
@@ -53,6 +55,7 @@ struct picture {
  public:
     picture(int h, int w, int m, int **data);
     ~picture();
+
     int get_h() const;
     int get_w() const;
     int** get_data();

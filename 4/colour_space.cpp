@@ -431,7 +431,7 @@ void picture::RGB_to(COLOUR_SPACE space) {
                 case YCbCr601:
                     RGB_to_YCbCr(data[h][w], K_R_601, K_G_601, K_B_601);
                     break;
-                
+
                 case YCbCr709:
                     RGB_to_YCbCr(data[h][w], K_R_709, K_G_709, K_B_709);
                     break;

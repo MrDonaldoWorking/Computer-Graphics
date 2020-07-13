@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::ifstream in(argv[1]);
+    std::ifstream in(argv[1], std::ios::binary);
     if (!in.is_open()) {
         std::cerr << "Couldn't open " << argv[1];
         return EXIT_FAILURE;
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
     drawer.draw_line();
     std::cout << "Line was successfully drawn\n";
 
-    std::ofstream out(argv[2]);
+    std::ofstream out(argv[2], std::ios::binary);
     if (!out.is_open()) {
         std::cerr << "Couldn't open " << argv[2];
         in.close();

@@ -2,21 +2,51 @@
 #define LINE_DRAWER
 
 double const MAX_BRIGHTNESS = 255.0;
+int const AMPLE_SHIFT = 5;
+int const STEP = 10;
 
 struct point {
  public:
-    explicit point(double x, double y);
+    explicit point(double const x, double const y);
    //  point(std::initializer_list<double> const& list);
     ~point() = default;
 
-    double get_x() const;
-    double get_y() const;
-
-    void swap_axis();
+    inline double get_x() const;
+    inline double get_y() const;
 
  private:
     double x;
     double y;
+};
+
+struct rectangle {
+    explicit rectangle(point const A, point const B, point const C, point const D);
+    ~rectangle() = default;
+
+    inline double get_leftest_x() const;
+    inline double get_rightest_x() const;
+    inline double get_highest_y() const;
+    inline double get_lowest_y() const;
+
+    inline point get_A() const;
+    inline point get_B() const;
+    inline point get_C() const;
+    inline point get_D() const;
+
+    double get_height() const;
+    double get_width() const;
+
+    double get_square() const;
+    double intersect_with(rectangle const& other) const;
+
+ private:
+    point A;
+    point B;
+    point C;
+    point D;
+
+    bool is_inside(point const& p) const;
+    bool is_entirelly_inside(rectangle const& other) const;
 };
 
 struct picture {
@@ -27,7 +57,9 @@ struct picture {
     int get_w() const;
     int** get_data();
 
-    void fill_pixel(int x, int y, bool swapped, int brightness, double percentage, bool sRGB, double gamma);
+    int get(int const h, int const w) const;
+    void set(int const h, int const w, int const val);
+
  private:
     int height;
     int width;
@@ -54,7 +86,7 @@ struct line_drawer {
     bool sRGB;
     picture pic = picture(0, 0, 0, nullptr);
 
-    void draw_part_of_line(int x0, int x1, double y, double gradient, bool swapped);
+    void fill_pixel(int const x, int const y, double const square);
 };
 
 #endif

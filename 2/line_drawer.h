@@ -7,18 +7,20 @@ int const STEP = 10;
 
 struct point {
  public:
+    point() = default;
     explicit point(double const x, double const y);
    //  point(std::initializer_list<double> const& list);
     ~point() = default;
 
-    bool operator<(point const& p) const;
+    bool operator <(point const& p) const;
+    bool operator ==(point const& p) const;
 
     inline double get_x() const;
     inline double get_y() const;
 
  private:
-    double x;
-    double y;
+    double x = -1;
+    double y = -1;
 };
 
 struct rectangle {
@@ -48,7 +50,22 @@ struct rectangle {
     point D;
 
     bool is_inside(point const& p) const;
-    bool is_entirelly_inside(rectangle const& other) const;
+};
+
+struct line {
+    explicit line(point const& a, point const& b);
+    ~line() = default;
+
+    double get_a() const;
+    double get_b() const;
+    double get_c() const;
+
+    point intersect_with(line const& other) const;
+ private:
+    // ax + by + c = 0
+    double a;
+    double b;
+    double c;
 };
 
 struct picture {

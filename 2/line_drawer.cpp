@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <math.h>
 #include "line_drawer.h"
 
@@ -25,8 +26,16 @@ double point::get_y() const {
     return y;
 }
 
-bool point::operator<(point const& p) const {
-    return x < p.x || x == p.x && y < p.x;
+bool point::operator <(point const& p) const {
+    return x < p.x || (x == p.x && y < p.x);
+}
+
+point operator -(const point &u, const point &v) {
+	return point(u.get_x() - v.get_x(), u.get_y() - v.get_y());
+}
+
+bool point::operator ==(point const& p) const {
+    return x == p.x && y == p.y;
 }
 
 picture::picture(int h, int w, int m, int **data)
@@ -127,16 +136,37 @@ bool rectangle::is_inside(point const& p) const {
     return check_equals(get_square(), S1 + S2 + S3 + S4);
 }
 
-bool rectangle::is_entirelly_inside(rectangle const& other) const {
-    return is_inside(other.get_A()) && is_inside(other.get_B()) && is_inside(other.get_C()) && is_inside(other.get_D());
+inline double vec(point const& v1, point const& v2) {
+	return v1.get_x() * v2.get_y() - v2.get_x() * v1.get_y();
+}
+
+inline double length(point const& a) {
+	return sqrt(sqr(a.get_x()) + sqr(a.get_y()));
+}
+
+double square(std::vector<point> & ps) {
+    ps.push_back(ps[0]);
+    double sum = 0;
+    for (size_t i = 1; i < ps.size(); ++i) {
+        sum += vec(ps[i - 1], ps[i]);
+    }
+
+    return sum / 2;
 }
 
 double rectangle::intersect_with(rectangle const& other) const {
     // static std::ofstream out("test.log", std::ios::app);
     // static int cnt_ = 0;
     // ++cnt_;
+    std::vector<point> const others = {other.get_A(), other.get_B(), other.get_C(), other.get_D()};
+    std::vector<point> intersections;
+    for (point const& p : others) {
+        if (is_inside(p)) {
+            intersections.push_back(p);
+        }
+    }
 
-    if (is_entirelly_inside(other)) {
+    if (intersections.size() == 4) {
         // if (cnt_ % 100 <= 10) {
         //     out << "=== " << cnt_ << " ===" << std::endl;
         //     out << "Pixel is in line, " << other.get_square() << std::endl;
@@ -144,33 +174,89 @@ double rectangle::intersect_with(rectangle const& other) const {
         return other.get_square();
     }
 
-    // if (cnt_ % 100 <= 10) {
-    //     out << "=== " << cnt_ << " ===" << std::endl;
-    //     out << "Pixel is not in line" << std::endl;
-    // }
-    double x_step = other.get_width() / STEP;
-    double y_step = other.get_height() / STEP;
+    std::vector<line> const lines = {line(A, B), line(B, C), line(C, D), line(D, A)};
+    std::vector<line> pixel_lines = {line(others.back(), others[0])};
+    for (size_t i = 1; i < others.size(); ++i) {
+        pixel_lines.push_back(line(others[i - 1], others[i]));
+    }
 
-    // split pixel into 100 smaller squares
-    int cnt = 0;
-    // if (cnt_ % 100 <= 10) {
-    //     out << "found: ";
-    // }
-    for (double x = other.get_leftest_x(); x <= other.get_rightest_x(); x += x_step) {
-        for (double y = other.get_lowest_y(); y <= other.get_highest_y(); y += y_step) {
-            if (is_inside(point(x, y))) {
-                // if (cnt_ % 100 <= 10) {
-                //     out << "(" << x << ", " << y << ") ";
-                // }
-                ++cnt;
+    for (line const& drawing : lines) {
+        for (line const& squares : pixel_lines) {
+            point p = drawing.intersect_with(squares);
+            if (check_equals(squares.get_a(), 0)) { // vertical
+                if (p.get_y() - other.get_lowest_y() > EPS && other.get_highest_y() - p.get_y() > EPS) {
+                    intersections.push_back(p);
+                }
+            } else if (check_equals(squares.get_b(), 0)) { // horisontal
+                if (p.get_x() - other.get_leftest_x() > EPS && other.get_rightest_x() - p.get_x() > EPS) {
+                    intersections.push_back(p);
+                }
+            } else {
+                std::cerr << "SHIT HAPPENS\n";
+                std::cerr << "lines\n";
+                std::for_each(lines.begin(), lines.end(), [](line const& l) { std::cerr << l.get_a() << ", " << l.get_b() << ", " << l.get_c() << '\n';});
+                std::cerr << "pixel_lines\n";
+                std::for_each(pixel_lines.begin(), pixel_lines.end(), [](line const& l) { std::cerr << l.get_a() << ", " << l.get_b() << ", " << l.get_c() << '\n';});
+                throw std::runtime_error(":(");
             }
         }
     }
 
-    // if (cnt_ % 100 <= 10) {
-    //     out << "result is " << cnt << " / " << sqr(STEP) << " = " << cnt / sqr(STEP) << std::endl;
-    // }
-    return cnt / sqr(STEP);
+    if (intersections.empty()) {
+        return 0;
+    }
+
+    point the_leftest = intersections[0];
+    for (point const& p : intersections) {
+        the_leftest = std::min(the_leftest, p);
+    }
+
+    std::sort(intersections.begin(), intersections.end(), [the_leftest](point const& a, point const& b) {
+        double vec_prod = vec(a - the_leftest, b - the_leftest);
+        return vec_prod > 0 || (vec_prod > 0 && (length(b - the_leftest) - length(a - the_leftest)) > EPS);
+    });
+    intersections.resize(std::unique(intersections.begin(), intersections.end()) - intersections.begin());
+
+    return square(intersections);
+}
+
+line::line(point const& a, point const& b) {
+    this->a = a.get_y() - b.get_y();
+    this->b = b.get_x() - a.get_x();
+    this->c = -this->a * a.get_x() - this->b * a.get_y();
+
+    double const z = sqrt(sqr(this->a) + sqr(this->b));
+    this->a /= z;
+    this->b /= z;
+    this->c /= z;
+}
+
+double line::get_a() const {
+    return a;
+}
+
+double line::get_b() const {
+    return b;
+}
+
+double line::get_c() const {
+    return c;
+}
+
+inline double det(double const a, double const b, double const c, double const d) {
+    return a * d - b * c;
+}
+
+point line::intersect_with(line const& other) const {
+    double const zn = det(a, b, other.a, other.b);
+    if (fabs(zn) < EPS) {
+        // doesn't intersect
+        return point(-1, -1);
+    }
+
+    double const x = -det(c, b, other.c, other.b) / zn;
+    double const y = -det(a, c, other.a, other.c) / zn;
+    return point(x, y);
 }
 
 line_drawer::line_drawer(int b, double t, double x0, double y0, double x1,
